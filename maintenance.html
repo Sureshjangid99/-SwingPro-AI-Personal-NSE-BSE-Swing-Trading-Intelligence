@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwingPro AI — Maintenance</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050a0e;--surface:#0d1117;--border:#1a2332;--accent:#ffaa00;--text:#e8f4f8;--muted:#4a6080;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;text-align:center;max-width:420px;animation:fadeUp 0.5s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px);}to{opacity:1;transform:translateY(0);}}
+.icon{font-size:64px;display:block;margin-bottom:16px;animation:spin 4s linear infinite;}
+@keyframes spin{0%,100%{transform:rotate(0deg);}50%{transform:rotate(10deg);}75%{transform:rotate(-10deg);}}
+h1{font-size:24px;font-weight:800;color:var(--accent);margin-bottom:8px;}
+p{color:var(--muted);font-family:'Space Mono',monospace;font-size:12px;line-height:1.8;}
+</style>
+</head>
+<body>
+<div class="card">
+  <span class="icon">🔧</span>
+  <h1>Under Maintenance</h1>
+  <p>SwingPro AI is temporarily offline for maintenance.<br>We'll be back shortly.<br><br>Thank you for your patience! 🙏</p>
+</div>
+</body>
+</html>

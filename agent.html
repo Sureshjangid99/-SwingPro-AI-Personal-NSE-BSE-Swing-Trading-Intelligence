@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwingPro AI — Trading Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050a0e;--surface:#0d1117;--surface2:#111820;--border:#1a2332;--accent:#00ff88;--accent2:#0066ff;--text:#e8f4f8;--muted:#4a6080;--danger:#ff3355;--warn:#ffaa00;--card:#0a1420;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 20px;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo h1{font-size:18px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.header-right{display:flex;align-items:center;gap:12px;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.status-text{font-family:'Space Mono',monospace;font-size:11px;color:var(--accent);text-transform:uppercase;letter-spacing:1px;}
+.btn-sm{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none;transition:all 0.2s;}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+.main{display:flex;flex:1;overflow:hidden;}
+.sidebar{width:300px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;overflow:hidden;flex-shrink:0;}
+.sidebar-tabs{display:flex;border-bottom:1px solid var(--border);}
+.tab-btn{flex:1;padding:12px;background:none;border:none;color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;cursor:pointer;transition:all 0.2s;border-bottom:2px solid transparent;}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);}
+.tab-content{display:none;flex:1;overflow-y:auto;padding:16px;}
+.tab-content.active{display:block;}
+.market-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+.market-item .name{font-size:13px;font-weight:700;}
+.up{color:var(--accent);}.down{color:var(--danger);}
+.news-item{border-left:2px solid var(--accent2);padding:8px 12px;margin-bottom:10px;background:var(--card);border-radius:0 6px 6px 0;}
+.news-item p{font-size:12px;line-height:1.5;}
+.trade-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:8px;}
+.trade-header{display:flex;justify-content:space-between;margin-bottom:8px;}
+.trade-stock{font-weight:700;font-size:14px;}
+.trade-badge{font-family:'Space Mono',monospace;font-size:10px;padding:2px 8px;border-radius:20px;}
+.badge-pending{background:rgba(255,170,0,0.15);color:var(--warn);}
+.badge-win{background:rgba(0,255,136,0.15);color:var(--accent);}
+.badge-loss{background:rgba(255,51,85,0.15);color:var(--danger);}
+.trade-levels{display:grid;grid-template-columns:1fr 1fr;gap:4px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);}
+.trade-actions{display:flex;gap:6px;margin-top:8px;}
+.btn-trade{flex:1;padding:4px;border-radius:4px;border:none;font-size:11px;cursor:pointer;font-family:'Space Mono',monospace;}
+.btn-win{background:rgba(0,255,136,0.15);color:var(--accent);border:1px solid rgba(0,255,136,0.3);}
+.btn-loss{background:rgba(255,51,85,0.15);color:var(--danger);border:1px solid rgba(255,51,85,0.3);}
+.perf-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px;}
+.perf-card{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center;}
+.perf-val{font-size:22px;font-weight:800;font-family:'Space Mono',monospace;}
+.perf-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:4px;}
+.chat-area{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.chat-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:16px;}
+.msg{display:flex;gap:12px;animation:fadeIn 0.3s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+.msg-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.msg-user .msg-avatar{background:rgba(0,102,255,0.2);border:1px solid rgba(0,102,255,0.3);}
+.msg-ai .msg-avatar{background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.2);}
+.msg-bubble{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;max-width:80%;line-height:1.7;font-size:14px;white-space:pre-wrap;}
+.msg-user .msg-bubble{background:rgba(0,102,255,0.1);border-color:rgba(0,102,255,0.2);margin-left:auto;}
+.msg-user{flex-direction:row-reverse;}
+.typing{display:flex;align-items:center;gap:4px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;}
+.typing span{width:6px;height:6px;border-radius:50%;background:var(--accent);animation:bounce 1s infinite;}
+.typing span:nth-child(2){animation-delay:0.15s;}
+.typing span:nth-child(3){animation-delay:0.3s;}
+@keyframes bounce{0%,80%,100%{transform:translateY(0);}40%{transform:translateY(-6px);}}
+.quick-actions{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap;}
+.quick-btn{background:var(--surface2);border:1px solid var(--border);border-radius:20px;padding:6px 14px;color:var(--text);font-size:12px;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.quick-btn:hover{border-color:var(--accent);color:var(--accent);}
+.chat-input{padding:16px 20px;border-top:1px solid var(--border);display:flex;gap:12px;background:var(--surface);}
+textarea{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:12px 16px;color:var(--text);font-family:'Syne',sans-serif;font-size:14px;resize:none;outline:none;height:48px;transition:border-color 0.2s;}
+textarea:focus{border-color:var(--accent);}
+.send-btn{background:linear-gradient(135deg,var(--accent),#00cc66);border:none;border-radius:10px;width:48px;height:48px;cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;}
+.send-btn:hover{opacity:0.85;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);display:none;align-items:center;justify-content:center;z-index:100;}
+.modal-overlay.open{display:flex;}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:480px;max-width:95vw;}
+.modal h3{font-size:18px;font-weight:800;margin-bottom:20px;}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-group{margin-bottom:12px;}
+.form-group label{display:block;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;outline:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.btn-primary{flex:1;background:linear-gradient(135deg,var(--accent),#00cc66);border:none;border-radius:8px;padding:12px;color:#050a0e;font-weight:800;font-size:14px;cursor:pointer;}
+.btn-cancel{flex:1;background:none;border:1px solid var(--border);border-radius:8px;padding:12px;color:var(--muted);font-size:14px;cursor:pointer;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+select option{background:var(--surface);}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">
+    <span style="font-size:24px;">📈</span>
+    <h1>SwingPro AI</h1>
+  </div>
+  <div class="header-right">
+    <div class="status-dot"></div>
+    <span class="status-text">LIVE</span>
+    <button class="btn-sm" onclick="doLogout()">Logout</button>
+  </div>
+</header>
+<div class="main">
+  <div class="sidebar">
+    <div class="sidebar-tabs">
+      <button class="tab-btn active" onclick="switchTab('market',this)">Market</button>
+      <button class="tab-btn" onclick="switchTab('trades',this)">Trades</button>
+      <button class="tab-btn" onclick="switchTab('perf',this)">Stats</button>
+    </div>
+    <div class="tab-content active" id="tab-market">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Live Prices</div>
+      <div id="market-list"><div style="color:var(--muted);font-size:12px;text-align:center;margin-top:20px;">Loading...</div></div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin:16px 0 8px;">Market News</div>
+      <div id="news-list"></div>
+    </div>
+    <div class="tab-content" id="tab-trades">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+        <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">Trade Journal</span>
+        <button onclick="document.getElementById('addTradeModal').classList.add('open')" style="background:rgba(0,255,136,0.1);border:1px solid rgba(0,255,136,0.3);border-radius:6px;padding:4px 10px;color:var(--accent);font-size:11px;cursor:pointer;">+ Add</button>
+      </div>
+      <div id="trades-list"><div style="color:var(--muted);font-size:12px;text-align:center;margin-top:20px;">No trades yet</div></div>
+    </div>
+    <div class="tab-content" id="tab-perf">
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px;">Performance Stats</div>
+      <div class="perf-grid">
+        <div class="perf-card"><div class="perf-val up" id="p-winrate">0%</div><div class="perf-label">Win Rate</div></div>
+        <div class="perf-card"><div class="perf-val" id="p-total">0</div><div class="perf-label">Total Trades</div></div>
+        <div class="perf-card"><div class="perf-val up" id="p-wins">0</div><div class="perf-label">Wins</div></div>
+        <div class="perf-card"><div class="perf-val down" id="p-losses">0</div><div class="perf-label">Losses</div></div>
+      </div>
+      <div class="perf-card"><div class="perf-val" id="p-pnl" style="font-size:18px;">₹0</div><div class="perf-label">Total P&L</div></div>
+    </div>
+  </div>
+  <div class="chat-area">
+    <div class="chat-messages" id="chat-messages">
+      <div class="msg msg-ai">
+        <div class="msg-avatar">🤖</div>
+        <div class="msg-bubble"><strong>SwingPro AI is ready!</strong> 📈
+
+I'm your personal NSE/BSE swing trading assistant. Ask me anything!
+
+• "Best swing trades for today?"
+• "Which sectors are trending?"
+• "Analyze Reliance for swing trade"
+
+Always use Stop Loss. Trade safe! 🛡️</div>
+      </div>
+    </div>
+    <div class="quick-actions">
+      <button class="quick-btn" onclick="sendQuick('Best swing trades today?')">🔥 Best trades today</button>
+      <button class="quick-btn" onclick="sendQuick('Which sectors are trending right now?')">📊 Trending sectors</button>
+      <button class="quick-btn" onclick="sendQuick('What is the overall market mood today?')">🌡️ Market mood</button>
+      <button class="quick-btn" onclick="sendQuick('Give me 3 strong swing trade setups with SL and targets')">🎯 3 setups with SL</button>
+    </div>
+    <div class="chat-input">
+      <textarea id="msg-input" placeholder="Ask about stocks, sectors, trade setups..." onkeydown="handleKey(event)"></textarea>
+      <button class="send-btn" onclick="sendMessage()">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD TRADE MODAL -->
+<div class="modal-overlay" id="addTradeModal">
+  <div class="modal">
+    <h3>📌 Add Trade to Journal</h3>
+    <div class="form-row">
+      <div class="form-group"><label>Stock Symbol</label><input id="t-stock" placeholder="e.g. RELIANCE"></div>
+      <div class="form-group"><label>Sector</label>
+        <select id="t-sector"><option>IT</option><option>Pharma</option><option>Banking</option><option>Auto</option><option>Energy</option><option>FMCG</option><option>Other</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Entry ₹</label><input id="t-entry" type="number"></div>
+      <div class="form-group"><label>Stop Loss ₹</label><input id="t-sl" type="number"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label>Target 1 ₹</label><input id="t-t1" type="number"></div>
+      <div class="form-group"><label>Target 2 ₹</label><input id="t-t2" type="number"></div>
+    </div>
+    <div class="form-group"><label>Signal Strength</label>
+      <select id="t-signal"><option>Strong</option><option>Moderate</option><option>Weak</option></select>
+    </div>
+    <div class="form-group"><label>Notes</label><textarea id="t-notes" rows="2" placeholder="Why this trade?"></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="document.getElementById('addTradeModal').classList.remove('open')">Cancel</button>
+      <button class="btn-primary" onclick="saveTrade()">Save Trade</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── AUTH CHECK ───────────────────────────────────────────────────────────
+const TOKEN = localStorage.getItem('sp_token');
+if (!TOKEN) { window.location.href = '/'; }
+
+function authHeaders() {
+  return {'Content-Type':'application/json','Authorization':'Bearer '+TOKEN};
+}
+
+function doLogout() {
+  localStorage.removeItem('sp_token');
+  localStorage.removeItem('sp_role');
+  window.location.href = '/';
+}
+
+// ─── TABS ─────────────────────────────────────────────────────────────────
+function switchTab(tab, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-'+tab).classList.add('active');
+  if (tab==='trades') loadTrades();
+  if (tab==='perf') loadPerformance();
+}
+
+// ─── MARKET ───────────────────────────────────────────────────────────────
+async function loadMarket() {
+  try {
+    const r = await fetch('/api/market-overview', {headers: authHeaders()});
+    if (r.status === 401) { doLogout(); return; }
+    const data = await r.json();
+    document.getElementById('market-list').innerHTML = (data.indices||[]).map(s=>`
+      <div class="market-item">
+        <div><div class="name">${s.symbol.replace('.NS','').replace('^','')}</div>
+        <div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);">Vol: ${(s.volume/1e6).toFixed(1)}M</div></div>
+        <div style="text-align:right;">
+          <div style="font-family:'Space Mono',monospace;font-size:12px;">₹${s.price.toLocaleString()}</div>
+          <div class="${s.change_pct>=0?'up':'down'}" style="font-family:'Space Mono',monospace;font-size:11px;">${s.change_pct>=0?'▲':'▼'} ${Math.abs(s.change_pct)}%</div>
+        </div>
+      </div>`).join('');
+    document.getElementById('news-list').innerHTML = (data.news||[]).map(n=>`
+      <div class="news-item"><p>${n}</p></div>`).join('');
+  } catch(e) {}
+}
+
+// ─── CHAT ─────────────────────────────────────────────────────────────────
+let isLoading = false;
+async function sendMessage() {
+  if (isLoading) return;
+  const input = document.getElementById('msg-input');
+  const msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  appendMsg('user', msg);
+  isLoading = true;
+  const tid = appendTyping();
+  try {
+    const r = await fetch('/api/chat', {
+      method:'POST', headers: authHeaders(),
+      body: JSON.stringify({message: msg})
+    });
+    if (r.status === 401) { doLogout(); return; }
+    const data = await r.json();
+    removeTyping(tid);
+    appendMsg('ai', data.reply);
+  } catch(e) {
+    removeTyping(tid);
+    appendMsg('ai','⚠️ Connection error. Please try again.');
+  }
+  isLoading = false;
+}
+
+function sendQuick(msg) { document.getElementById('msg-input').value=msg; sendMessage(); }
+function handleKey(e) { if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();} }
+
+function appendMsg(role, text) {
+  const c = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className = `msg msg-${role==='user'?'user':'ai'}`;
+  d.innerHTML = `<div class="msg-avatar">${role==='user'?'👤':'🤖'}</div><div class="msg-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  c.appendChild(d); c.scrollTop = c.scrollHeight;
+}
+
+let tc = 0;
+function appendTyping() {
+  const id = 'typing-'+(++tc);
+  const c = document.getElementById('chat-messages');
+  const d = document.createElement('div');
+  d.className='msg msg-ai'; d.id=id;
+  d.innerHTML='<div class="msg-avatar">🤖</div><div class="typing"><span></span><span></span><span></span></div>';
+  c.appendChild(d); c.scrollTop=c.scrollHeight; return id;
+}
+function removeTyping(id) { const e=document.getElementById(id); if(e) e.remove(); }
+
+// ─── TRADES ───────────────────────────────────────────────────────────────
+async function loadTrades() {
+  const r = await fetch('/api/trades', {headers: authHeaders()});
+  const data = await r.json();
+  const list = document.getElementById('trades-list');
+  if (!data.trades.length) { list.innerHTML='<div style="color:var(--muted);font-size:12px;text-align:center;">No trades yet!</div>'; return; }
+  list.innerHTML = data.trades.map(t=>`
+    <div class="trade-item">
+      <div class="trade-header">
+        <span class="trade-stock">${t.stock}</span>
+        <span class="trade-badge badge-${t.result}">${t.result.toUpperCase()}</span>
+      </div>
+      <div class="trade-levels">
+        <span>Entry: ₹${t.entry}</span><span>SL: ₹${t.sl}</span>
+        <span>T1: ₹${t.target1}</span><span>T2: ₹${t.target2}</span>
+      </div>
+      ${t.result==='pending'?`
+      <div class="trade-actions">
+        <button class="btn-trade btn-win" onclick="markTrade(${t.id},'win')">✅ Win</button>
+        <button class="btn-trade btn-loss" onclick="markTrade(${t.id},'loss')">❌ Loss</button>
+      </div>`:`<div style="font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;">P&L: ₹${t.profit_loss}</div>`}
+    </div>`).join('');
+}
+
+async function markTrade(id, result) {
+  const pl = result==='win'
+    ? parseFloat(prompt('Enter profit amount (₹):')||0)
+    : -Math.abs(parseFloat(prompt('Enter loss amount (₹):')||0));
+  await fetch(`/api/trades/${id}`, {method:'PUT', headers: authHeaders(), body: JSON.stringify({result, profit_loss: pl})});
+  loadTrades(); loadPerformance();
+}
+
+async function saveTrade() {
+  await fetch('/api/trades', {method:'POST', headers: authHeaders(), body: JSON.stringify({
+    stock: document.getElementById('t-stock').value.toUpperCase(),
+    entry: parseFloat(document.getElementById('t-entry').value),
+    sl: parseFloat(document.getElementById('t-sl').value),
+    target1: parseFloat(document.getElementById('t-t1').value),
+    target2: parseFloat(document.getElementById('t-t2').value),
+    sector: document.getElementById('t-sector').value,
+    signal_strength: document.getElementById('t-signal').value,
+    notes: document.getElementById('t-notes').value
+  })});
+  document.getElementById('addTradeModal').classList.remove('open');
+  loadTrades();
+}
+
+async function loadPerformance() {
+  const r = await fetch('/api/performance', {headers: authHeaders()});
+  const d = await r.json();
+  document.getElementById('p-winrate').textContent = d.win_rate+'%';
+  document.getElementById('p-winrate').className = 'perf-val '+(d.win_rate>=50?'up':'down');
+  document.getElementById('p-total').textContent = d.total;
+  document.getElementById('p-wins').textContent = d.wins;
+  document.getElementById('p-losses').textContent = d.losses;
+  const pnl = document.getElementById('p-pnl');
+  pnl.textContent = '₹'+d.total_pnl.toLocaleString();
+  pnl.className = 'perf-val '+(d.total_pnl>=0?'up':'down');
+}
+
+loadMarket();
+setInterval(loadMarket, 60000);
+</script>
+</body>
+</html>

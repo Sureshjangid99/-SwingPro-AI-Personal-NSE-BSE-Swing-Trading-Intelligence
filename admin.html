@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwingPro AI — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050a0e;--surface:#0d1117;--surface2:#111820;--border:#1a2332;--accent:#ffaa00;--green:#00ff88;--blue:#0066ff;--text:#e8f4f8;--muted:#4a6080;--danger:#ff3355;--card:#0a1420;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;}
+
+/* LOGIN SCREEN */
+.login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;}
+.login-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:400px;}
+.login-card h1{font-size:24px;font-weight:800;color:var(--accent);margin-bottom:4px;}
+.login-card p{color:var(--muted);font-family:'Space Mono',monospace;font-size:10px;letter-spacing:2px;margin-bottom:32px;}
+.login-card input{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:var(--text);font-family:'Space Mono',monospace;font-size:16px;outline:none;letter-spacing:4px;margin-bottom:16px;}
+.login-card input:focus{border-color:var(--accent);}
+.login-card .btn{width:100%;background:linear-gradient(135deg,var(--accent),#ff8800);border:none;border-radius:8px;padding:16px;color:#050a0e;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;cursor:pointer;}
+.error-msg{background:rgba(255,51,85,0.1);border:1px solid rgba(255,51,85,0.3);border-radius:8px;padding:12px;color:var(--danger);font-family:'Space Mono',monospace;font-size:12px;margin-bottom:16px;display:none;}
+.back-link{display:block;text-align:center;margin-top:16px;color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;text-decoration:none;}
+
+/* ADMIN APP */
+.admin-app{display:none;}
+header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 24px;height:56px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50;}
+.logo{display:flex;align-items:center;gap:10px;}
+.logo h1{font-size:16px;font-weight:800;color:var(--accent);}
+.badge-admin{background:rgba(255,170,0,0.1);border:1px solid rgba(255,170,0,0.3);border-radius:20px;padding:3px 12px;font-family:'Space Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:1px;}
+.header-right{display:flex;gap:10px;align-items:center;}
+.btn-sm{background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:6px 12px;color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+.layout{display:flex;}
+.sidebar{width:220px;background:var(--surface);border-right:1px solid var(--border);min-height:calc(100vh - 56px);padding:16px 0;position:sticky;top:56px;flex-shrink:0;}
+.nav-section{padding:8px 16px;font-family:'Space Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:2px;margin-top:8px;}
+.nav-item{display:block;padding:10px 20px;color:var(--muted);font-size:13px;cursor:pointer;transition:all 0.2s;border-left:3px solid transparent;}
+.nav-item:hover,.nav-item.active{color:var(--text);background:rgba(255,170,0,0.05);border-left-color:var(--accent);}
+.content{flex:1;padding:24px;overflow-x:hidden;}
+.section{display:none;}.section.active{display:block;}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;}
+.stat-val{font-size:28px;font-weight:800;font-family:'Space Mono',monospace;margin-bottom:4px;}
+.stat-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;}
+.green{color:var(--green);}.yellow{color:var(--accent);}.red{color:var(--danger);}.blue{color:var(--blue);}
+.table-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:24px;}
+table{width:100%;border-collapse:collapse;}
+th{padding:10px 16px;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid var(--border);}
+td{padding:12px 16px;font-size:13px;border-bottom:1px solid rgba(26,35,50,0.5);}
+tr:last-child td{border-bottom:none;}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-family:'Space Mono',monospace;font-size:10px;}
+.badge-active{background:rgba(0,255,136,0.1);color:var(--green);}
+.badge-inactive{background:rgba(255,51,85,0.1);color:var(--danger);}
+.badge-pending{background:rgba(255,170,0,0.1);color:var(--accent);}
+.badge-approved{background:rgba(0,255,136,0.1);color:var(--green);}
+.btn{background:linear-gradient(135deg,var(--accent),#ff8800);border:none;border-radius:8px;padding:10px 20px;color:#050a0e;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;cursor:pointer;}
+.btn-green{background:linear-gradient(135deg,var(--green),#00cc66);color:#050a0e;}
+.btn-red{background:linear-gradient(135deg,var(--danger),#cc0022);color:#fff;}
+.btn-icon{background:none;border:1px solid var(--border);border-radius:6px;padding:5px 10px;color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.2s;}
+.btn-icon:hover{border-color:var(--accent);color:var(--accent);}
+.btn-icon.danger:hover{border-color:var(--danger);color:var(--danger);}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-family:'Space Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+.form-group input,.form-group select,.form-group textarea{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:10px 12px;color:var(--text);font-family:'Space Mono',monospace;font-size:13px;outline:none;}
+.form-group input:focus,.form-group select:focus{border-color:var(--accent);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+select option{background:var(--surface);}
+.toggle-btn{background:none;border:1px solid var(--border);border-radius:6px;padding:8px 16px;font-family:'Space Mono',monospace;font-size:11px;cursor:pointer;transition:all 0.2s;}
+.toggle-on{border-color:var(--green);color:var(--green);background:rgba(0,255,136,0.05);}
+.toggle-off{border-color:var(--danger);color:var(--danger);background:rgba(255,51,85,0.05);}
+.emergency-card{background:rgba(255,51,85,0.05);border:1px solid rgba(255,51,85,0.2);border-radius:12px;padding:24px;margin-bottom:16px;}
+.emergency-card h3{color:var(--danger);margin-bottom:8px;}
+.emergency-card p{color:var(--muted);font-size:13px;margin-bottom:16px;line-height:1.6;}
+.section-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
+.section-header h2{font-size:20px;font-weight:800;}
+.announce-item{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;}
+::-webkit-scrollbar{width:4px;}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.pad{padding:24px;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div class="login-screen" id="login-screen">
+  <div class="login-card">
+    <h1>👑 Admin Panel</h1>
+    <p>SWINGPRO AI — BOSS CONTROL</p>
+    <div class="error-msg" id="admin-error"></div>
+    <input type="password" id="admin-pwd" placeholder="••••••••" autofocus>
+    <button class="btn" onclick="doAdminLogin()">👑 Enter Admin Panel</button>
+    <a href="/" class="back-link">← Back to Agent</a>
+  </div>
+</div>
+
+<!-- ADMIN APP -->
+<div class="admin-app" id="admin-app">
+<header>
+  <div class="logo"><span>👑</span><h1>SwingPro AI — Admin</h1><span class="badge-admin">BOSS PANEL</span></div>
+  <div class="header-right">
+    <span id="agent-badge" class="badge badge-active">● AGENT LIVE</span>
+    <a href="/agent" class="btn-sm" target="_blank">View Agent ↗</a>
+    <button class="btn-sm" onclick="doAdminLogout()">Logout</button>
+  </div>
+</header>
+<div class="layout">
+  <div class="sidebar">
+    <div class="nav-section">Overview</div>
+    <div class="nav-item active" onclick="showSection('dashboard',this)"><span>📊</span> Dashboard</div>
+    <div class="nav-section">Control</div>
+    <div class="nav-item" onclick="showSection('agent-control',this)"><span>🤖</span> Agent Control</div>
+    <div class="nav-item" onclick="showSection('market-settings',this)"><span>📈</span> Market Settings</div>
+    <div class="nav-section">Users</div>
+    <div class="nav-item" onclick="showSection('users',this)"><span>👥</span> User Management</div>
+    <div class="nav-item" onclick="showSection('payments',this)"><span>💰</span> Payments</div>
+    <div class="nav-section">Performance</div>
+    <div class="nav-item" onclick="showSection('trades',this)"><span>📋</span> Trade History</div>
+    <div class="nav-item" onclick="showSection('learning',this)"><span>🧠</span> Learning Engine</div>
+    <div class="nav-section">System</div>
+    <div class="nav-item" onclick="showSection('announcements',this)"><span>📢</span> Announcements</div>
+    <div class="nav-item" onclick="showSection('emergency',this)"><span>🚨</span> Emergency</div>
+  </div>
+  <div class="content">
+
+    <div class="section active" id="section-dashboard">
+      <div class="section-header"><h2>📊 Dashboard</h2><button class="btn" onclick="loadDashboard()">🔄 Refresh</button></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val green" id="s-agent">ON</div><div class="stat-label">Agent Status</div></div>
+        <div class="stat-card"><div class="stat-val yellow" id="s-users">0</div><div class="stat-label">Total Users</div></div>
+        <div class="stat-card"><div class="stat-val green" id="s-active">0</div><div class="stat-label">Active Users</div></div>
+        <div class="stat-card"><div class="stat-val blue" id="s-paid">0</div><div class="stat-label">Paid Users</div></div>
+        <div class="stat-card"><div class="stat-val yellow" id="s-pending">0</div><div class="stat-label">Pending Payments</div></div>
+        <div class="stat-card"><div class="stat-val green" id="s-revenue">₹0</div><div class="stat-label">Total Revenue</div></div>
+        <div class="stat-card"><div class="stat-val" id="s-trades">0</div><div class="stat-label">Total Trades</div></div>
+        <div class="stat-card"><div class="stat-val green" id="s-winrate">0%</div><div class="stat-label">Win Rate</div></div>
+      </div>
+    </div>
+
+    <div class="section" id="section-agent-control">
+      <div class="section-header"><h2>🤖 Agent Control</h2></div>
+      <div class="table-wrap pad">
+        <div class="form-group"><label>Agent Status</label>
+          <button id="agent-toggle" class="toggle-btn toggle-on" onclick="toggleAgent()">🟢 AGENT IS ON</button>
+        </div>
+        <div class="form-group" style="margin-top:16px;"><label>Maintenance Mode</label>
+          <button id="maint-toggle" class="toggle-btn toggle-off" onclick="toggleMaintenance()">🔴 MAINTENANCE OFF</button>
+        </div>
+        <div class="form-group" style="margin-top:16px;"><label>Agent Name</label><input type="text" id="agent-name"></div>
+        <div class="form-group"><label>Free Daily Query Limit</label><input type="number" id="free-limit"></div>
+        <button class="btn" onclick="saveAgentSettings()">💾 Save</button>
+      </div>
+    </div>
+
+    <div class="section" id="section-market-settings">
+      <div class="section-header"><h2>📈 Market Settings</h2></div>
+      <div class="table-wrap pad">
+        <div class="form-group"><label>Sectors to Scan</label><input type="text" id="sectors"></div>
+        <div class="form-row">
+          <div class="form-group"><label>Risk:Reward</label><select id="rr-ratio"><option>1:2</option><option>1:3</option><option>1:1.5</option></select></div>
+          <div class="form-group"><label>Stop Loss %</label><select id="sl-pct"><option value="1.5">1.5%</option><option value="2">2%</option><option value="3">3%</option><option value="5">5%</option></select></div>
+        </div>
+        <div class="form-group"><label>Min Signal Strength</label><select id="min-signal"><option value="all">All</option><option value="moderate">Moderate & Strong</option><option value="strong">Strong Only</option></select></div>
+        <div class="form-group"><label>Blacklisted Stocks (never suggest)</label><input type="text" id="blacklist"></div>
+        <div class="form-group"><label>Whitelisted Stocks (always watch)</label><input type="text" id="whitelist"></div>
+        <button class="btn" onclick="saveMarketSettings()">💾 Save</button>
+      </div>
+    </div>
+
+    <div class="section" id="section-users">
+      <div class="section-header"><h2>👥 Users</h2><button class="btn" onclick="showAddUser()">+ Add User</button></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Name</th><th>Email</th><th>Plan</th><th>Status</th><th>Joined</th><th>Actions</th></tr></thead>
+        <tbody id="users-table"></tbody></table>
+      </div>
+      <div id="add-user-form" style="display:none;" class="table-wrap pad">
+        <h3 style="margin-bottom:16px;">Add User</h3>
+        <div class="form-group"><label>Name</label><input id="u-name"></div>
+        <div class="form-group"><label>Email</label><input id="u-email" type="email"></div>
+        <div class="form-group"><label>Plan</label><select id="u-plan"><option value="free">Free</option><option value="basic">Basic</option><option value="pro">Pro</option><option value="premium">Premium</option></select></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn" onclick="addUser()">Add</button>
+          <button class="btn-sm" onclick="document.getElementById('add-user-form').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="section-payments">
+      <div class="section-header"><h2>💰 Payments</h2><button class="btn" onclick="showAddPayment()">+ Record Payment</button></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>User</th><th>Amount</th><th>Plan</th><th>UPI Ref</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+        <tbody id="payments-table"></tbody></table>
+      </div>
+      <div id="add-payment-form" style="display:none;" class="table-wrap pad">
+        <h3 style="margin-bottom:16px;">Record Payment</h3>
+        <div class="form-group"><label>User ID</label><input id="p-userid" type="number"></div>
+        <div class="form-group"><label>Amount ₹</label><input id="p-amount" type="number"></div>
+        <div class="form-group"><label>Plan</label><select id="p-plan"><option value="basic">Basic</option><option value="pro">Pro</option><option value="premium">Premium</option></select></div>
+        <div class="form-group"><label>UPI Reference</label><input id="p-ref"></div>
+        <div class="form-group"><label>Status</label><select id="p-status"><option value="pending">Pending</option><option value="approved">Approved</option></select></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn" onclick="addPayment()">Record</button>
+          <button class="btn-sm" onclick="document.getElementById('add-payment-form').style.display='none'">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="section-trades">
+      <div class="section-header"><h2>📋 Trade History</h2><button class="btn btn-red" onclick="confirmReset()">🗑 Reset All</button></div>
+      <div class="table-wrap">
+        <table><thead><tr><th>Stock</th><th>Entry</th><th>SL</th><th>T1</th><th>T2</th><th>Sector</th><th>Result</th><th>P&L</th><th>Date</th></tr></thead>
+        <tbody id="admin-trades-table"></tbody></table>
+      </div>
+    </div>
+
+    <div class="section" id="section-learning">
+      <div class="section-header"><h2>🧠 Learning Engine</h2></div>
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-val green" id="l-winrate">0%</div><div class="stat-label">Win Rate</div></div>
+        <div class="stat-card"><div class="stat-val" id="l-total">0</div><div class="stat-label">Trades Analyzed</div></div>
+        <div class="stat-card"><div class="stat-val green" id="l-wins">0</div><div class="stat-label">Wins</div></div>
+        <div class="stat-card"><div class="stat-val red" id="l-losses">0</div><div class="stat-label">Losses</div></div>
+      </div>
+      <div class="table-wrap pad">
+        <div id="learning-status" style="font-family:'Space Mono',monospace;font-size:13px;color:var(--green);margin-bottom:12px;">● Collecting trade data...</div>
+        <div style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);line-height:2;">
+          📌 Agent learns from every Win/Loss you mark.<br>
+          📌 After 20+ trades, patterns become meaningful.<br>
+          📌 After 50+ trades, accuracy improves noticeably.<br>
+          📌 More trades = smarter agent = better signals.
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="section-announcements">
+      <div class="section-header"><h2>📢 Announcements</h2></div>
+      <div class="table-wrap pad" style="margin-bottom:16px;">
+        <div class="form-group"><label>New Announcement</label><textarea id="ann-msg" rows="3" placeholder="Type your announcement..."></textarea></div>
+        <button class="btn" onclick="postAnnouncement()">📢 Post</button>
+      </div>
+      <div id="announcements-list"></div>
+    </div>
+
+    <div class="section" id="section-emergency">
+      <div class="section-header"><h2>🚨 Emergency Controls</h2></div>
+      <div class="emergency-card">
+        <h3>🔴 Emergency Stop</h3>
+        <p>Immediately stops all AI signals. Users will see maintenance message.</p>
+        <button class="btn btn-red" onclick="emergencyStop()">🔴 EMERGENCY STOP</button>
+      </div>
+      <div class="emergency-card">
+        <h3>🟢 Resume Agent</h3>
+        <p>Bring the agent back online after emergency stop.</p>
+        <button class="btn btn-green" onclick="resumeAgent()">🟢 RESUME AGENT</button>
+      </div>
+      <div class="emergency-card">
+        <h3>🗑 Reset All Data</h3>
+        <p>Delete all trade history and chat history. Cannot be undone.</p>
+        <button class="btn btn-red" onclick="confirmReset()">🗑 Reset All Data</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+</div>
+
+<script>
+let ADMIN_TOKEN = localStorage.getItem('sp_admin_token');
+let dashData = {};
+
+function authHeaders() {
+  return {'Content-Type':'application/json','Authorization':'Bearer '+ADMIN_TOKEN};
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────
+document.getElementById('admin-pwd').addEventListener('keydown', e => { if(e.key==='Enter') doAdminLogin(); });
+
+async function doAdminLogin() {
+  const pwd = document.getElementById('admin-pwd').value.trim();
+  const err = document.getElementById('admin-error');
+  err.style.display = 'none';
+  try {
+    const r = await fetch('/api/admin/login', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({password: pwd})});
+    const data = await r.json();
+    if (data.success) {
+      ADMIN_TOKEN = data.token;
+      localStorage.setItem('sp_admin_token', data.token);
+      showAdminApp();
+    } else {
+      err.textContent = '⚠️ ' + (data.error || 'Wrong password!');
+      err.style.display = 'block';
+    }
+  } catch(e) {
+    err.textContent = '⚠️ Connection error.';
+    err.style.display = 'block';
+  }
+}
+
+function doAdminLogout() {
+  localStorage.removeItem('sp_admin_token');
+  window.location.href = '/';
+}
+
+function showAdminApp() {
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('admin-app').style.display = 'block';
+  loadDashboard();
+}
+
+// Check if already logged in as admin
+if (ADMIN_TOKEN) { showAdminApp(); }
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('section-'+id).classList.add('active');
+  el.classList.add('active');
+  if (id==='users') renderUsers();
+  if (id==='payments') renderPayments();
+  if (id==='trades') loadAdminTrades();
+  if (id==='learning') loadLearning();
+  if (id==='announcements') renderAnnouncements();
+  if (id==='agent-control') fillAgentSettings();
+  if (id==='market-settings') fillMarketSettings();
+}
+
+// ─── DASHBOARD ────────────────────────────────────────────────────────────
+async function loadDashboard() {
+  const r = await fetch('/api/admin/dashboard', {headers: authHeaders()});
+  if (r.status === 403) { localStorage.removeItem('sp_admin_token'); window.location.reload(); return; }
+  dashData = await r.json();
+  const s = dashData.stats;
+  document.getElementById('s-agent').textContent = s.agent_status.toUpperCase();
+  document.getElementById('s-agent').className = 'stat-val '+(s.agent_status==='on'?'green':'red');
+  document.getElementById('s-users').textContent = s.total_users;
+  document.getElementById('s-active').textContent = s.active_users;
+  document.getElementById('s-paid').textContent = s.paid_users;
+  document.getElementById('s-pending').textContent = s.pending_payments;
+  document.getElementById('s-revenue').textContent = '₹'+s.total_revenue.toLocaleString();
+  document.getElementById('s-trades').textContent = s.total_trades;
+  document.getElementById('s-winrate').textContent = s.win_rate+'%';
+  document.getElementById('s-winrate').className = 'stat-val '+(s.win_rate>=50?'green':'red');
+  const badge = document.getElementById('agent-badge');
+  badge.textContent = s.agent_status==='on'?'● AGENT LIVE':'● AGENT OFFLINE';
+  badge.className = 'badge '+(s.agent_status==='on'?'badge-active':'badge-inactive');
+}
+
+// ─── SETTINGS ─────────────────────────────────────────────────────────────
+function fillAgentSettings() {
+  if (!dashData.settings) return;
+  const s = dashData.settings;
+  const at = document.getElementById('agent-toggle');
+  at.textContent = s.agent_status==='on'?'🟢 AGENT IS ON':'🔴 AGENT IS OFF';
+  at.className = 'toggle-btn '+(s.agent_status==='on'?'toggle-on':'toggle-off');
+  const mt = document.getElementById('maint-toggle');
+  mt.textContent = s.maintenance_mode==='on'?'🟢 MAINTENANCE ON':'🔴 MAINTENANCE OFF';
+  mt.className = 'toggle-btn '+(s.maintenance_mode==='on'?'toggle-on':'toggle-off');
+  document.getElementById('agent-name').value = s.agent_name||'';
+  document.getElementById('free-limit').value = s.free_daily_limit||'5';
+}
+
+function fillMarketSettings() {
+  if (!dashData.settings) return;
+  const s = dashData.settings;
+  document.getElementById('sectors').value = s.scan_sectors||'';
+  document.getElementById('rr-ratio').value = s.rr_ratio||'1:2';
+  document.getElementById('sl-pct').value = s.sl_percent||'2';
+  document.getElementById('min-signal').value = s.min_signal_strength||'all';
+  document.getElementById('blacklist').value = s.blacklisted_stocks||'';
+  document.getElementById('whitelist').value = s.whitelisted_stocks||'';
+}
+
+async function saveSetting(key, val) {
+  await fetch('/api/admin/settings', {method:'POST', headers: authHeaders(), body: JSON.stringify({[key]: val})});
+}
+
+async function toggleAgent() {
+  const cur = dashData.settings?.agent_status||'on';
+  const nv = cur==='on'?'off':'on';
+  await saveSetting('agent_status', nv);
+  dashData.settings.agent_status = nv;
+  fillAgentSettings(); loadDashboard();
+}
+
+async function toggleMaintenance() {
+  const cur = dashData.settings?.maintenance_mode||'off';
+  const nv = cur==='on'?'off':'on';
+  await saveSetting('maintenance_mode', nv);
+  dashData.settings.maintenance_mode = nv;
+  fillAgentSettings();
+}
+
+async function saveAgentSettings() {
+  await fetch('/api/admin/settings', {method:'POST', headers: authHeaders(), body: JSON.stringify({
+    agent_name: document.getElementById('agent-name').value,
+    free_daily_limit: document.getElementById('free-limit').value
+  })});
+  alert('✅ Saved!');
+}
+
+async function saveMarketSettings() {
+  await fetch('/api/admin/settings', {method:'POST', headers: authHeaders(), body: JSON.stringify({
+    scan_sectors: document.getElementById('sectors').value,
+    rr_ratio: document.getElementById('rr-ratio').value,
+    sl_percent: document.getElementById('sl-pct').value,
+    min_signal_strength: document.getElementById('min-signal').value,
+    blacklisted_stocks: document.getElementById('blacklist').value,
+    whitelisted_stocks: document.getElementById('whitelist').value
+  })});
+  alert('✅ Saved!');
+}
+
+// ─── USERS ────────────────────────────────────────────────────────────────
+function renderUsers() {
+  const users = dashData.users||[];
+  const tbody = document.getElementById('users-table');
+  if (!users.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:24px;">No users yet</td></tr>'; return; }
+  tbody.innerHTML = users.map(u=>`
+    <tr>
+      <td><strong>${u.name||'—'}</strong></td>
+      <td style="font-family:'Space Mono',monospace;font-size:12px;">${u.email}</td>
+      <td><span class="badge badge-${u.plan}">${(u.plan||'').toUpperCase()}</span></td>
+      <td><span class="badge ${u.active?'badge-active':'badge-inactive'}">${u.active?'Active':'Inactive'}</span></td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">${(u.joined_at||'').slice(0,10)}</td>
+      <td>
+        <button class="btn-icon" onclick="toggleUser(${u.id},${u.active})">${u.active?'🔴 Deactivate':'🟢 Activate'}</button>
+        <button class="btn-icon danger" onclick="deleteUser(${u.id})">🗑</button>
+      </td>
+    </tr>`).join('');
+}
+
+function showAddUser() { document.getElementById('add-user-form').style.display='block'; }
+
+async function addUser() {
+  await fetch('/api/admin/users', {method:'POST', headers: authHeaders(), body: JSON.stringify({
+    name: document.getElementById('u-name').value,
+    email: document.getElementById('u-email').value,
+    plan: document.getElementById('u-plan').value
+  })});
+  document.getElementById('add-user-form').style.display='none';
+  await loadDashboard(); renderUsers();
+}
+
+async function toggleUser(id, cur) {
+  await fetch(`/api/admin/users/${id}`, {method:'PUT', headers: authHeaders(), body: JSON.stringify({active: cur?0:1})});
+  await loadDashboard(); renderUsers();
+}
+
+async function deleteUser(id) {
+  if (!confirm('Delete this user?')) return;
+  await fetch(`/api/admin/users/${id}`, {method:'DELETE', headers: authHeaders()});
+  await loadDashboard(); renderUsers();
+}
+
+// ─── PAYMENTS ─────────────────────────────────────────────────────────────
+function renderPayments() {
+  const payments = dashData.payments||[];
+  const tbody = document.getElementById('payments-table');
+  if (!payments.length) { tbody.innerHTML='<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:24px;">No payments yet</td></tr>'; return; }
+  tbody.innerHTML = payments.map(p=>`
+    <tr>
+      <td>${p.name||'User #'+p.user_id}</td>
+      <td style="font-family:'Space Mono',monospace;color:var(--green);">₹${p.amount}</td>
+      <td><span class="badge">${(p.plan||'').toUpperCase()}</span></td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px;">${p.upi_ref||'—'}</td>
+      <td><span class="badge badge-${p.status}">${p.status.toUpperCase()}</span></td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">${(p.created_at||'').slice(0,10)}</td>
+      <td>${p.status==='pending'?`<button class="btn-icon" onclick="approvePayment(${p.id})">✅ Approve</button>`:''}</td>
+    </tr>`).join('');
+}
+
+function showAddPayment() { document.getElementById('add-payment-form').style.display='block'; }
+
+async function addPayment() {
+  await fetch('/api/admin/payments', {method:'POST', headers: authHeaders(), body: JSON.stringify({
+    user_id: document.getElementById('p-userid').value,
+    amount: document.getElementById('p-amount').value,
+    plan: document.getElementById('p-plan').value,
+    upi_ref: document.getElementById('p-ref').value,
+    status: document.getElementById('p-status').value
+  })});
+  document.getElementById('add-payment-form').style.display='none';
+  await loadDashboard(); renderPayments();
+}
+
+async function approvePayment(id) {
+  await fetch(`/api/admin/payments/${id}`, {method:'PUT', headers: authHeaders(), body: JSON.stringify({status:'approved'})});
+  await loadDashboard(); renderPayments();
+}
+
+// ─── TRADES ───────────────────────────────────────────────────────────────
+async function loadAdminTrades() {
+  const r = await fetch('/api/admin/trades', {headers: authHeaders()});
+  const data = await r.json();
+  const tbody = document.getElementById('admin-trades-table');
+  if (!data.trades.length) { tbody.innerHTML='<tr><td colspan="9" style="text-align:center;color:var(--muted);padding:24px;">No trades yet</td></tr>'; return; }
+  tbody.innerHTML = data.trades.map(t=>`
+    <tr>
+      <td><strong>${t.stock}</strong></td>
+      <td style="font-family:'Space Mono',monospace;">₹${t.entry}</td>
+      <td style="font-family:'Space Mono',monospace;color:var(--danger);">₹${t.sl}</td>
+      <td style="font-family:'Space Mono',monospace;color:var(--green);">₹${t.target1}</td>
+      <td style="font-family:'Space Mono',monospace;color:var(--green);">₹${t.target2}</td>
+      <td>${t.sector||'—'}</td>
+      <td><span class="badge badge-${t.result}">${t.result.toUpperCase()}</span></td>
+      <td style="font-family:'Space Mono',monospace;" class="${t.profit_loss>=0?'green':'red'}">₹${t.profit_loss}</td>
+      <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);">${(t.created_at||'').slice(0,10)}</td>
+    </tr>`).join('');
+}
+
+async function confirmReset() {
+  if (!confirm('⚠️ Delete ALL trade & chat history? Cannot be undone!')) return;
+  if (!confirm('Last chance — are you sure?')) return;
+  await fetch('/api/admin/trades/reset', {method:'DELETE', headers: authHeaders()});
+  alert('✅ All data reset!');
+  loadAdminTrades();
+}
+
+// ─── LEARNING ─────────────────────────────────────────────────────────────
+async function loadLearning() {
+  const r = await fetch('/api/performance', {headers: {'Authorization':'Bearer '+localStorage.getItem('sp_token')||ADMIN_TOKEN}});
+  const d = await r.json();
+  document.getElementById('l-winrate').textContent = d.win_rate+'%';
+  document.getElementById('l-total').textContent = d.total;
+  document.getElementById('l-wins').textContent = d.wins;
+  document.getElementById('l-losses').textContent = d.losses;
+  const st = document.getElementById('learning-status');
+  if (d.total < 10) st.textContent = '● Collecting data... ('+d.total+'/10 trades)';
+  else if (d.total < 30) st.textContent = '● Learning patterns... ('+d.total+' trades)';
+  else st.textContent = '✅ Active learning — '+d.total+' trades analyzed';
+  st.style.color = d.total>=30?'var(--green)':'var(--accent)';
+}
+
+// ─── ANNOUNCEMENTS ────────────────────────────────────────────────────────
+function renderAnnouncements() {
+  const list = document.getElementById('announcements-list');
+  const anns = dashData.announcements||[];
+  if (!anns.length) { list.innerHTML='<div style="color:var(--muted);font-size:13px;">No announcements yet.</div>'; return; }
+  list.innerHTML = anns.map(a=>`
+    <div class="announce-item">
+      <span style="font-size:13px;">${a.message}</span>
+      <button class="btn-icon danger" onclick="deleteAnn(${a.id})">🗑</button>
+    </div>`).join('');
+}
+
+async function postAnnouncement() {
+  const msg = document.getElementById('ann-msg').value.trim();
+  if (!msg) return;
+  await fetch('/api/admin/announcement', {method:'POST', headers: authHeaders(), body: JSON.stringify({message: msg})});
+  document.getElementById('ann-msg').value = '';
+  await loadDashboard(); renderAnnouncements();
+}
+
+async function deleteAnn(id) {
+  await fetch(`/api/admin/announcement/${id}`, {method:'DELETE', headers: authHeaders()});
+  await loadDashboard(); renderAnnouncements();
+}
+
+// ─── EMERGENCY ────────────────────────────────────────────────────────────
+async function emergencyStop() {
+  if (!confirm('🚨 EMERGENCY STOP — halt all signals?')) return;
+  await fetch('/api/admin/settings', {method:'POST', headers: authHeaders(), body: JSON.stringify({agent_status:'off',maintenance_mode:'on'})});
+  dashData.settings.agent_status='off'; dashData.settings.maintenance_mode='on';
+  loadDashboard(); alert('🔴 Agent stopped.');
+}
+
+async function resumeAgent() {
+  if (!confirm('Resume agent?')) return;
+  await fetch('/api/admin/settings', {method:'POST', headers: authHeaders(), body: JSON.stringify({agent_status:'on',maintenance_mode:'off'})});
+  dashData.settings.agent_status='on'; dashData.settings.maintenance_mode='off';
+  loadDashboard(); alert('🟢 Agent is live!');
+}
+</script>
+</body>
+</html>

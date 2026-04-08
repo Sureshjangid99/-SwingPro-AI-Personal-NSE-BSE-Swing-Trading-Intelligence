@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SwingPro AI — Login</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#050a0e;--surface:#0d1117;--border:#1a2332;--accent:#00ff88;--accent2:#0066ff;--text:#e8f4f8;--muted:#4a6080;--danger:#ff3355;}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;}
+.bg-grid{position:fixed;inset:0;background-image:linear-gradient(rgba(0,255,136,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,255,136,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+.glow{position:fixed;width:600px;height:600px;background:radial-gradient(circle,rgba(0,255,136,0.08) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;}
+.card{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:48px 40px;width:100%;max-width:420px;animation:fadeUp 0.6s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.logo{text-align:center;margin-bottom:32px;}
+.logo-icon{font-size:48px;display:block;margin-bottom:8px;}
+.logo h1{font-size:28px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
+.logo p{color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;margin-top:4px;letter-spacing:2px;text-transform:uppercase;}
+.form-group{margin-bottom:20px;}
+label{display:block;font-size:12px;font-family:'Space Mono',monospace;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+input[type="password"]{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:14px 16px;color:var(--text);font-family:'Space Mono',monospace;font-size:16px;outline:none;transition:border-color 0.2s;letter-spacing:4px;}
+input[type="password"]:focus{border-color:var(--accent);}
+.btn{width:100%;background:linear-gradient(135deg,var(--accent),#00cc66);border:none;border-radius:8px;padding:16px;color:#050a0e;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;cursor:pointer;transition:opacity 0.2s,transform 0.1s;}
+.btn:hover{opacity:0.9;transform:translateY(-1px);}
+.btn:disabled{opacity:0.6;cursor:not-allowed;transform:none;}
+.error{background:rgba(255,51,85,0.1);border:1px solid rgba(255,51,85,0.3);border-radius:8px;padding:12px 16px;color:var(--danger);font-family:'Space Mono',monospace;font-size:13px;margin-bottom:20px;display:none;}
+.admin-link{display:block;text-align:center;margin-top:20px;color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;text-decoration:none;cursor:pointer;}
+.admin-link:hover{color:var(--accent);}
+.ticker{position:fixed;bottom:0;left:0;right:0;background:rgba(0,255,136,0.05);border-top:1px solid var(--border);padding:8px 0;overflow:hidden;}
+.ticker-inner{display:flex;gap:48px;animation:scroll 20s linear infinite;white-space:nowrap;}
+@keyframes scroll{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+.ticker span{font-family:'Space Mono',monospace;font-size:11px;color:var(--muted);}
+.up{color:var(--accent);}.down{color:var(--danger);}
+</style>
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="glow"></div>
+<div class="card">
+  <div class="logo">
+    <span class="logo-icon">📈</span>
+    <h1>SwingPro AI</h1>
+    <p>NSE • BSE • Swing Trading Intelligence</p>
+  </div>
+  <div class="error" id="error-msg"></div>
+  <div class="form-group">
+    <label>Access Password</label>
+    <input type="password" id="password" placeholder="••••••••" autofocus>
+  </div>
+  <button class="btn" id="login-btn" onclick="doLogin()">🚀 Enter Agent</button>
+  <span class="admin-link" onclick="goAdmin()">👑 Admin Panel →</span>
+</div>
+<div class="ticker">
+  <div class="ticker-inner">
+    <span>NIFTY 50 <span class="up">▲ 0.42%</span></span>
+    <span>SENSEX <span class="up">▲ 0.38%</span></span>
+    <span>RELIANCE <span class="up">▲ 1.2%</span></span>
+    <span>TCS <span class="down">▼ 0.5%</span></span>
+    <span>HDFCBANK <span class="up">▲ 0.8%</span></span>
+    <span>INFY <span class="up">▲ 0.3%</span></span>
+    <span>SUNPHARMA <span class="up">▲ 1.1%</span></span>
+    <span>WIPRO <span class="down">▼ 0.2%</span></span>
+    <span>NIFTY 50 <span class="up">▲ 0.42%</span></span>
+    <span>SENSEX <span class="up">▲ 0.38%</span></span>
+    <span>RELIANCE <span class="up">▲ 1.2%</span></span>
+    <span>TCS <span class="down">▼ 0.5%</span></span>
+    <span>HDFCBANK <span class="up">▲ 0.8%</span></span>
+    <span>INFY <span class="up">▲ 0.3%</span></span>
+  </div>
+</div>
+<script>
+// Check if already logged in
+const tok = localStorage.getItem('sp_token');
+if (tok) { window.location.href = '/agent'; }
+
+document.getElementById('password').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') doLogin();
+});
+
+async function doLogin() {
+  const pwd = document.getElementById('password').value.trim();
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('error-msg');
+  if (!pwd) return;
+  btn.disabled = true;
+  btn.textContent = '⏳ Logging in...';
+  err.style.display = 'none';
+  try {
+    const r = await fetch('/api/login', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({password: pwd})
+    });
+    const data = await r.json();
+    if (data.success) {
+      localStorage.setItem('sp_token', data.token);
+      localStorage.setItem('sp_role', 'user');
+      window.location.href = '/agent';
+    } else {
+      err.textContent = '⚠️ ' + (data.error || 'Wrong password!');
+      err.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = '🚀 Enter Agent';
+    }
+  } catch(e) {
+    err.textContent = '⚠️ Connection error. Try again.';
+    err.style.display = 'block';
+    btn.disabled = false;
+    btn.textContent = '🚀 Enter Agent';
+  }
+}
+
+function goAdmin() {
+  window.location.href = '/admin';
+}
+</script>
+</body>
+</html>
