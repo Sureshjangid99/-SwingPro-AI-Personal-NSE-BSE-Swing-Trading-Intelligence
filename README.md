@@ -1,0 +1,2 @@
+# -SwingPro-AI-Personal-NSE-BSE-Swing-Trading-Intelligence
+SwingPro AI is a personal AI-powered swing trading assistant built specifically for Indian stock markets (NSE/BSE). It combines live market data, real-time news analysis, and AI intelligence to give you actionable swing trade signals with precise Entry, Stop Loss, and Target levels — just like having a professional trading analyst for you 24/7.
